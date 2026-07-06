@@ -12,8 +12,4 @@ type Reaction struct {
 	UserID    uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
 	Type      string    `gorm:"not null;default:'like'" json:"type"`
 	CreatedAt time.Time `json:"created_at"`
-
-	// Relations
-	Post Post `gorm:"foreignKey:PostID" json:"post"`
-	User User `gorm:"foreignKey:UserID" json:"user"`
 }

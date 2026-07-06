@@ -12,7 +12,4 @@ type Tag struct {
 	Slug      string    `gorm:"unique;not null" json:"slug"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-
-	// Relations
-	Posts []Post `gorm:"many2many:post_tags" json:"posts"`
 }
