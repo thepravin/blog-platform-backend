@@ -2,6 +2,7 @@ package app
 
 import (
 	"blog_platform/config"
+	"blog_platform/internal/routes"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ type Server struct {
 
 func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 	e := echo.New()
-	RegisterRoutes(e, db, cfg)
+	routes.RegisterRoutes(e, db, cfg)
 	return &Server{E: e, DB: db, Cfg: cfg}
 }
 
