@@ -1,8 +1,8 @@
 package app
 
 import (
-	"blog_project/config"
-	"blog_project/internal/auth"
+	"blog_platform/config"
+	"blog_platform/internal/auth"
 	"net/http"
 	"strings"
 
