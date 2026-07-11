@@ -19,6 +19,9 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("Failed to connect database %w", err)
 	}
 
+	// Enable the uuid-ossp extension for uuid_generate_v4()
+	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
+
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Post{},

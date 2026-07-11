@@ -21,5 +21,5 @@ func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 }
 
 func (s *Server) Start(addr string) error {
-	return s.Start(addr)
+	return s.E.Start(addr)
 }

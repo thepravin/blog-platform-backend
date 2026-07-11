@@ -1,0 +1,16 @@
+FROM golang:alpine
+
+WORKDIR /app
+
+# Install 'Air' for hot-reloading
+RUN go install github.com/air-verse/air@latest
+
+# Copy go.mod and go.sum to download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# We don't need to copy the rest of the code here because 
+# docker-compose will mount your local folder into /app
+
+# Run Air with the config file we just created
+CMD ["air", "-c", ".air.toml"]

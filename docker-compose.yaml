@@ -1,0 +1,42 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      # It maps local folder (./) to the /app folder inside the container.
+      - ./:/app
+    environment:
+      # Override DB_HOST to point to the docker database service instead of localhost
+      - DB_HOST=database
+    env_file:
+      - .env
+    depends_on:
+      - database
+
+  database:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blog_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis/redis-stack:latest
+    restart: always
+    ports:
+      - "6379:6379"
+      - "8001:8001"  # Web UI
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:

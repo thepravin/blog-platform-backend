@@ -27,7 +27,7 @@ func Load() *Config {
 		AppPort:   getEnv("APP_PORT", "8080"),
 		DBHost:    getEnv("DB_HOST", "localhost"),
 		DBUser:    getEnv("DB_USER", "postgres"),
-		DBPass:    getEnv("DB_PASS", "postgres"),
+		DBPass:    getEnv("DB_PASSWORD", "postgres"),
 		DBName:    getEnv("DB_NAME", "blogdb"),
 		DBPort:    getEnv("DB_PORT", "5432"),
 		JWTSecret: getEnv("JWT_SECRET", "kfdjsfjosifsfsf85648df"),

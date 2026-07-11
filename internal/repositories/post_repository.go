@@ -35,12 +35,27 @@ func (r *PostRepository) GetByID(id string) (*models.Post, error) {
 func (r *PostRepository) Delete(id string) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var post models.Post
+
+		// Fetch the associated tags with the post
 		if err := tx.Preload("Tags").First(&post, "id=?", id).Error; err != nil {
 			return nil
 		}
+		// Delete all teh rows in post_tabs
 		if err := tx.Model(&post).Association("Tags").Clear(); err != nil {
 			return err
 		}
+
+		// Delete associated comments
+		if err := tx.Where("post_id = ?", id).Delete(&models.Comment{}).Error; err != nil {
+			return err
+		}
+
+		// Delete associated reactions
+		if err := tx.Where("post_id = ?", id).Delete(&models.Reaction{}).Error; err != nil {
+			return err
+		}
+
+		// Delete Post
 		if err := tx.Delete(&post).Error; err != nil {
 			return err
 		}
