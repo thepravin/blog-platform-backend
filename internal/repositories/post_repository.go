@@ -63,6 +63,14 @@ func (r *PostRepository) Delete(id string) error {
 	})
 }
 
+func (r *PostRepository) GetAllDeletedPosts() ([]models.Post, error) {
+	var posts []models.Post
+
+	err := r.db.Unscoped().Where("deleted_at IS NOT NULL").Find(&posts).Error
+
+	return posts, err
+}
+
 func (r *PostRepository) Update(post *models.Post) error {
 	return r.db.Save(post).Error
 }

@@ -49,6 +49,15 @@ func (h *PostHandler) GetAll(c echo.Context) error {
 	return utils.JSON(c, http.StatusOK, true, "posts", posts)
 }
 
+func (h *PostHandler) GetHistory(c echo.Context) error {
+	posts, err := h.Service.GetAllDeletedPosts()
+	if err != nil {
+		return utils.Err(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return utils.JSON(c, http.StatusOK, true, "posts", posts)
+}
+
 func (h *PostHandler) Delete(c echo.Context) error {
 	id := c.Param("id")
 	if err := h.Service.Delete(id); err != nil {

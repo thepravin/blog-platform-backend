@@ -24,7 +24,7 @@ func Load() *Config {
 	}
 
 	return &Config{
-		AppPort:   getEnv("APP_PORT", "8080"),
+		AppPort:   getEnv("APP_PORT", "8080"), // getEnv(env_key, default_value)
 		DBHost:    getEnv("DB_HOST", "localhost"),
 		DBUser:    getEnv("DB_USER", "postgres"),
 		DBPass:    getEnv("DB_PASSWORD", "postgres"),
