@@ -94,3 +94,28 @@ func (h *PostHandler) GetPost(c echo.Context) error {
 		Data:    post,
 	})
 }
+
+func (h *PostHandler) GetDeletedPostById(c echo.Context) error {
+	id := c.Param("id")
+	post, err := h.Service.GetDeletedPostById(id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, utils.APIResponse{
+			Success: false,
+			Message: "Post Not found",
+		})
+	}
+
+	return c.JSON(http.StatusOK, utils.APIResponse{
+		Success: true,
+		Message: "Post fetched",
+		Data:    post,
+	})
+}
+
+func (h *PostHandler) RestoreDeletedPostById(c echo.Context) error {
+	id := c.Param("id")
+	if err := h.Service.RestoreDeletedPostById(id); err != nil {
+		return utils.Err(c, http.StatusInternalServerError, err.Error())
+	}
+	return utils.JSON(c, http.StatusOK, true, "Post restored", nil)
+}

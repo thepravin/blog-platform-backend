@@ -18,14 +18,27 @@ func (r *PostRepository) Create(p *models.Post) error { return r.db.Create(p).Er
 func (r *PostRepository) GetAll() ([]models.Post, error) {
 	var posts []models.Post
 
-	err := r.db.Order("created_at desc").Find(&posts).Error
+	err := r.db.
+		Preload("Author").
+		Preload("Comments").
+		Preload("Reactions").
+		Preload("Tags").
+		Order("created_at desc").Find(&posts).Error
 	return posts, err
 }
 
 func (r *PostRepository) GetByID(id string) (*models.Post, error) {
 	var post models.Post
 
-	err := r.db.Preload("Comments").Preload("Reactions").Preload("Tags").Where("id=?", id).First(&post).Error
+	err := r.db.
+		Preload("Author").
+		Preload("Comments").
+		Preload("Reactions").
+		Preload("Tags").
+		Where("id=?", id).
+		First(&post).
+		Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +49,13 @@ func (r *PostRepository) Delete(id string) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var post models.Post
 
-		// Fetch the associated tags with the post
-		if err := tx.Preload("Tags").First(&post, "id=?", id).Error; err != nil {
-			return nil
+		// Fetch the post to ensure it exists
+		if err := tx.First(&post, "id=?", id).Error; err != nil {
+			return err
 		}
-		// Delete all teh rows in post_tabs
-		if err := tx.Model(&post).Association("Tags").Clear(); err != nil {
+
+		// Delete associated tags in the join table
+		if err := tx.Where("post_id = ?", id).Delete(&models.PostTag{}).Error; err != nil {
 			return err
 		}
 
@@ -69,6 +83,54 @@ func (r *PostRepository) GetAllDeletedPosts() ([]models.Post, error) {
 	err := r.db.Unscoped().Where("deleted_at IS NOT NULL").Find(&posts).Error
 
 	return posts, err
+}
+
+func (r *PostRepository) GetDeletedPostById(id string) (*models.Post, error) {
+	var post models.Post
+
+	err := r.db.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Preload("Author").
+		Preload("Comments").
+		Preload("Tags").
+		Preload("Reactions").
+		Where("id = ?", id).
+		First(&post).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, err
+}
+
+func (r *PostRepository) RestoreDeletedPost(id string) error {
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+
+		// restore posts
+		if err := tx.Unscoped().Model(&models.Post{}).Where("id =?", id).Update("deleted_at", nil).Error; err != nil {
+			return err
+		}
+
+		// restore comments
+		if err := tx.Unscoped().Model(&models.Comment{}).Where("post_id = ?", id).Update("deleted_at", nil).Error; err != nil {
+			return err
+		}
+
+		// restore reactions
+		if err := tx.Unscoped().Model(&models.Reaction{}).Where("post_id = ?", id).Update("deleted_at", nil).Error; err != nil {
+			return err
+		}
+
+		// restore tags (in the post_tags join table)
+		if err := tx.Unscoped().Model(&models.PostTag{}).Where("post_id = ?", id).Update("deleted_at", nil).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *PostRepository) Update(post *models.Post) error {

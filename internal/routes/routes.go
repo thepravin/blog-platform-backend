@@ -53,9 +53,14 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 
 	g := e.Group("/api/v1")
 	g.Use(middleware.JWTMiddleware(cfg))
+
 	g.POST("/posts", postH.CreatePost)
 	g.GET("/posts/history", postH.GetHistory)
+	g.GET("/posts/history/:id", postH.GetDeletedPostById)
+	g.GET("/posts/:id/restore", postH.RestoreDeletedPostById)
 	g.DELETE("/posts/:id", postH.Delete)
+
 	g.POST("/posts/:id/comments", commentH.Add)
+
 	g.POST("/posts/:id/reactions", reactionH.Toggle)
 }

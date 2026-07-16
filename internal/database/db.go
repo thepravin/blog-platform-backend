@@ -22,6 +22,12 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 	// Enable the uuid-ossp extension for uuid_generate_v4()
 	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 
+	// Setup explicitly the many2many join table for soft deletes
+	err = db.SetupJoinTable(&models.Post{}, "Tags", &models.PostTag{})
+	if err != nil {
+		log.Fatalf("failed to setup join table: %v", err)
+	}
+
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Post{},
