@@ -25,14 +25,15 @@ func (s *PostService) Create(authorID uuid.UUID, title, content string, tags []s
 	now := time.Now()
 
 	post := &models.Post{
-		ID:         uuid.New(),
-		AuthorID:   authorID,
-		Title:      title,
-		Slug:       utils.MakeSlugSimple(title + "-" + uuid.NewString()[:6]),
-		Status:     "published",
-		Visibility: "public",
-		CreatedAt:  now,
-		UpdatedAt:  now,
+		ID:          uuid.New(),
+		AuthorID:    authorID,
+		Title:       title,
+		Slug:        utils.MakeSlugSimple(title + "-" + uuid.NewString()[:6]),
+		Status:      "published",
+		Visibility:  "public",
+		PublishedAt: &now,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(post).Error; err != nil {

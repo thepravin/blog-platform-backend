@@ -46,6 +46,10 @@ func (s *CommentService) Add(postID string, userID *string, parentId *string, co
 	if err := s.repo.Create(comment); err != nil {
 		return nil, err
 	}
+
+	// Increment comment count in the post
+	s.db.Model(&models.Post{}).Where("id = ?", postID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
+
 	return comment, nil
 }
 

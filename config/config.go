@@ -33,7 +33,7 @@ func Load() *Config {
 		DBName:             getEnv("DB_NAME", "blogdb"),
 		DBPort:             getEnv("DB_PORT", "5432"),
 		JWTSecret:          getEnv("JWT_SECRET", "kfdjsfjosifsfsf85648df"),
-		CORSAllowedOrigins: strings.Split(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5173/"), ","),
+		CORSAllowedOrigins: strings.Split(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5173"), ","),
 	}
 }
 

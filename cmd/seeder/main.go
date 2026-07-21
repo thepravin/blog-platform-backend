@@ -75,14 +75,14 @@ func seedPosts(db *gorm.DB) {
 	for i := 1; i <= 10; i++ {
 		author := users[i%len(users)]
 		post := models.Post{
-			AuthorID: author.ID,
-			Title:    fmt.Sprintf("Post Title %d", i),
-			Slug:     fmt.Sprintf("post-title-%d-%s", i, uuid.NewString()[:6]),
-			Excerpt:  fmt.Sprintf("This is an excerpt for post %d", i),
-			Content:  fmt.Sprintf("This is the full content for post %d", i),
-			Status:   "published",
+			AuthorID:   author.ID,
+			Title:      fmt.Sprintf("Post Title %d", i),
+			Slug:       fmt.Sprintf("post-title-%d-%s", i, uuid.NewString()[:6]),
+			Excerpt:    fmt.Sprintf("This is an excerpt for post %d", i),
+			Content:    fmt.Sprintf("This is the full content for post %d", i),
+			Status:     "published",
 			Visibility: "public",
-			Views:    int64(i * 10),
+			Views:      int64(i * 10),
 		}
 		if db.Where("title = ?", post.Title).First(&models.Post{}).Error == gorm.ErrRecordNotFound {
 			db.Create(&post)
@@ -116,6 +116,9 @@ func seedComments(db *gorm.DB) {
 		}
 		db.Create(&comment)
 	}
+
+	// Sync all comment counts
+	db.Exec("UPDATE posts SET comment_count = (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id AND comments.deleted_at IS NULL)")
 }
 
 func seedReactions(db *gorm.DB) {
@@ -139,4 +142,7 @@ func seedReactions(db *gorm.DB) {
 		}
 		db.FirstOrCreate(&reaction, models.Reaction{PostID: post.ID, UserID: user.ID})
 	}
+
+	// Sync all reaction counts
+	db.Exec("UPDATE posts SET reaction_count = (SELECT COUNT(*) FROM reactions WHERE reactions.post_id = posts.id AND reactions.deleted_at IS NULL)")
 }

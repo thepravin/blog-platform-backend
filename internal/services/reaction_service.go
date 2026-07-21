@@ -23,6 +23,8 @@ func (s *ReactionService) TogglePostLike(postID, userID string) (bool, error) {
 		if err := s.repo.Delete(re.ID.String()); err != nil {
 			return false, err
 		}
+		// Decrement the reaction count
+		s.db.Model(&models.Post{}).Where("id = ?", postID).Update("reaction_count", gorm.Expr("reaction_count - ?", 1))
 		return false, nil
 	}
 
@@ -36,5 +38,8 @@ func (s *ReactionService) TogglePostLike(postID, userID string) (bool, error) {
 	if err := s.repo.Create(nr); err != nil {
 		return false, err
 	}
+	// Increment the reaction count
+	s.db.Model(&models.Post{}).Where("id = ?", postID).Update("reaction_count", gorm.Expr("reaction_count + ?", 1))
+
 	return true, nil
 }
