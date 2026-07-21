@@ -14,6 +14,7 @@ import (
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
+	e.Use(middleware.CORS(cfg))
 	e.Use(middleware.InjectDB(db))
 
 	// Repos or Services Call
