@@ -124,6 +124,10 @@ func (s *PostService) GetByID(id string) (*models.Post, error) {
 	return s.repo.GetByID(id)
 }
 
+func (s *PostService) GetAllByUserId(id string) ([]models.Post, error) {
+	return s.repo.GetAllByUserId(id)
+}
+
 func (s *PostService) GetDeletedPostById(id string) (*models.Post, error) {
 	return s.repo.GetDeletedPostById(id)
 }

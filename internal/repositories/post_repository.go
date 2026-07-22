@@ -27,6 +27,18 @@ func (r *PostRepository) GetAll() ([]models.Post, error) {
 	return posts, err
 }
 
+func (r *PostRepository) GetAllByUserId(id string) ([]models.Post, error) {
+	var posts []models.Post
+
+	err := r.db.
+		Preload("Tags").
+		Where("author_id=?", id).
+		Find(&posts).
+		Error
+
+	return posts, err
+}
+
 func (r *PostRepository) GetByID(id string) (*models.Post, error) {
 	var post models.Post
 

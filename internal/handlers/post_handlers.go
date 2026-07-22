@@ -95,6 +95,28 @@ func (h *PostHandler) GetPost(c echo.Context) error {
 	})
 }
 
+func (h *PostHandler) GetPostsByUserId(c echo.Context) error {
+	userId, ok := c.Get("user_id").(string)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, utils.APIResponse{
+			Success: false,
+			Message: "Invalid user id",
+		})
+	}
+
+	posts, err := h.Service.GetAllByUserId(userId)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, utils.APIResponse{
+			Success: false,
+			Message: "Internal server Error",
+		})
+	}
+
+	return c.JSON(http.StatusOK, posts)
+}
+
 func (h *PostHandler) GetDeletedPostById(c echo.Context) error {
 	id := c.Param("id")
 	post, err := h.Service.GetDeletedPostById(id)
