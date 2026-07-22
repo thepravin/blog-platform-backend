@@ -50,7 +50,16 @@ func (h *PostHandler) GetAll(c echo.Context) error {
 }
 
 func (h *PostHandler) GetHistory(c echo.Context) error {
-	posts, err := h.Service.GetAllDeletedPosts()
+	userId, ok := c.Get("user_id").(string)
+
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, utils.APIResponse{
+			Success: false,
+			Message: "Invalid user id",
+		})
+	}
+
+	posts, err := h.Service.GetAllDeletedPosts(userId)
 	if err != nil {
 		return utils.Err(c, http.StatusInternalServerError, err.Error())
 	}
@@ -114,7 +123,7 @@ func (h *PostHandler) GetPostsByUserId(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, posts)
+	return utils.JSON(c, http.StatusOK, true, "posts", posts)
 }
 
 func (h *PostHandler) GetDeletedPostById(c echo.Context) error {
