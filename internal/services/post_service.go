@@ -28,6 +28,7 @@ func (s *PostService) Create(authorID uuid.UUID, title, content string, tags []s
 		ID:          uuid.New(),
 		AuthorID:    authorID,
 		Title:       title,
+		Content:     content,
 		Slug:        utils.MakeSlugSimple(title + "-" + uuid.NewString()[:6]),
 		Status:      "published",
 		Visibility:  "public",
