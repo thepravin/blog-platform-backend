@@ -26,8 +26,10 @@ type Post struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	// Relations
-
 	Comments  []Comment  `gorm:"foreignKey:PostID" json:"comments"`
 	Tags      []Tag      `gorm:"many2many:post_tags" json:"tags"`
 	Reactions []Reaction `gorm:"foreignKey:PostID" json:"reactions"`
+
+	// Virtual field
+	HasLiked bool `gorm:"-" json:"has_liked"`
 }

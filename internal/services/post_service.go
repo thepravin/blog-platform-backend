@@ -122,8 +122,22 @@ func (s *PostService) GetAllDeletedPosts(id string) ([]models.Post, error) {
 	return s.repo.GetAllDeletedPosts(id)
 }
 
-func (s *PostService) GetByID(slug string) (*models.Post, error) {
-	return s.repo.GetByID(slug)
+func (s *PostService) GetBySlug(slug, userID string) (*models.Post, error) {
+	post, err := s.repo.GetByID(slug)
+	if err != nil {
+		return nil, err
+	}
+
+	if userID != "" {
+		for _, reaction := range post.Reactions {
+			if reaction.UserID.String() == userID {
+				post.HasLiked = true
+				break
+			}
+		}
+	}
+
+	return post, nil
 }
 
 func (s *PostService) GetAllByUserId(id string) ([]models.Post, error) {

@@ -90,7 +90,8 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 
 func (h *PostHandler) GetPost(c echo.Context) error {
 	slug := c.Param("slug")
-	post, err := h.Service.GetByID(slug)
+	userId, _ := c.Get("user_id").(string)
+	post, err := h.Service.GetBySlug(slug, userId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, utils.APIResponse{
 			Success: false,
