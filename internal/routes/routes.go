@@ -39,7 +39,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 	e.POST("/api/v1/login", authH.Login)
 
 	e.GET("/api/v1/posts", postH.GetAll)
-	e.GET("/api/v1/posts/:id", postH.GetPost)
+	e.GET("/api/v1/posts/:slug", postH.GetPost)
 	e.GET("/api/v1/posts/:id/comments", commentH.List)
 	e.PUT("/api/v1/posts/:id", postH.UpdatePost)
 

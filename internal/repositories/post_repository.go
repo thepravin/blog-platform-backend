@@ -39,7 +39,7 @@ func (r *PostRepository) GetAllByUserId(id string) ([]models.Post, error) {
 	return posts, err
 }
 
-func (r *PostRepository) GetByID(id string) (*models.Post, error) {
+func (r *PostRepository) GetByID(slug string) (*models.Post, error) {
 	var post models.Post
 
 	err := r.db.
@@ -47,7 +47,7 @@ func (r *PostRepository) GetByID(id string) (*models.Post, error) {
 		Preload("Comments").
 		Preload("Reactions").
 		Preload("Tags").
-		Where("id=?", id).
+		Where("slug=?", slug).
 		First(&post).
 		Error
 

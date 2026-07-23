@@ -122,8 +122,8 @@ func (s *PostService) GetAllDeletedPosts(id string) ([]models.Post, error) {
 	return s.repo.GetAllDeletedPosts(id)
 }
 
-func (s *PostService) GetByID(id string) (*models.Post, error) {
-	return s.repo.GetByID(id)
+func (s *PostService) GetByID(slug string) (*models.Post, error) {
+	return s.repo.GetByID(slug)
 }
 
 func (s *PostService) GetAllByUserId(id string) ([]models.Post, error) {
