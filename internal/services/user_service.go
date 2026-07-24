@@ -55,3 +55,12 @@ func (s *UserService) Login(email, password string) (*models.User, string, error
 	token, _ := auth.GenerateJWT(u.ID.String(), u.Email, u.Role)
 	return u, token, nil
 }
+
+func (s *UserService) GetProfile(id string) (*models.User, error) {
+	u, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}

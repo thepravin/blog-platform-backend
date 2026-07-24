@@ -20,6 +20,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 	// Repos or Services Call
 	userRepo := repositories.NewUserRepository(db)
 	userSvc := services.NewUserService(userRepo)
+	userH := handlers.NewUserHandler(userSvc)
 	authH := handlers.NewAuthHandler(userSvc)
 
 	postRepo := repositories.NewPostRepository(db)
@@ -54,6 +55,8 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 
 	g := e.Group("/api/v1")
 	g.Use(middleware.JWTMiddleware(cfg))
+
+	g.GET("/profile/me", userH.GetProfile)
 
 	g.POST("/posts", postH.CreatePost)
 	g.GET("/posts/history", postH.GetHistory)
