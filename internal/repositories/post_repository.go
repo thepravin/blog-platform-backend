@@ -32,6 +32,7 @@ func (r *PostRepository) GetAllByUserId(id string) ([]models.Post, error) {
 
 	err := r.db.
 		Preload("Tags").
+		Preload("Author").
 		Where("author_id=?", id).
 		Find(&posts).
 		Error
