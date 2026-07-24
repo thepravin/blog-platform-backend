@@ -116,7 +116,9 @@ func (s *PostService) Update(postID string, title, content string, tags []string
 	return post, nil
 }
 
-func (s *PostService) GetAll() ([]models.Post, error) { return s.repo.GetAll() }
+func (s *PostService) GetAll(sortParam string) ([]models.Post, error) {
+	return s.repo.GetAll(sortParam)
+}
 
 func (s *PostService) GetAllDeletedPosts(id string) ([]models.Post, error) {
 	return s.repo.GetAllDeletedPosts(id)

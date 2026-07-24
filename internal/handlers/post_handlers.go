@@ -43,7 +43,12 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 }
 
 func (h *PostHandler) GetAll(c echo.Context) error {
-	posts, err := h.Service.GetAll()
+	sortParam := c.QueryParam("sort")
+	if sortParam == "" {
+		sortParam = "latest"
+	}
+
+	posts, err := h.Service.GetAll(sortParam)
 	if err != nil {
 		return utils.Err(c, http.StatusInternalServerError, err.Error())
 	}

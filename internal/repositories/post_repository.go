@@ -15,15 +15,23 @@ func NewPostRepository(db *gorm.DB) *PostRepository {
 }
 func (r *PostRepository) Create(p *models.Post) error { return r.db.Create(p).Error }
 
-func (r *PostRepository) GetAll() ([]models.Post, error) {
+func (r *PostRepository) GetAll(sortParam string) ([]models.Post, error) {
 	var posts []models.Post
 
-	err := r.db.
+	query := r.db.
 		Preload("Author").
 		Preload("Comments").
 		Preload("Reactions").
-		Preload("Tags").
-		Order("published_at desc").Find(&posts).Error
+		Preload("Tags")
+
+	if sortParam == "top" {
+		query = query.Order("views desc")
+	} else {
+		query = query.Order("published_at desc")
+	}
+
+	err := query.Find(&posts).Error
+
 	return posts, err
 }
 
