@@ -23,7 +23,7 @@ func (r *PostRepository) GetAll() ([]models.Post, error) {
 		Preload("Comments").
 		Preload("Reactions").
 		Preload("Tags").
-		Order("created_at desc").Find(&posts).Error
+		Order("published_at desc").Find(&posts).Error
 	return posts, err
 }
 
@@ -34,6 +34,7 @@ func (r *PostRepository) GetAllByUserId(id string) ([]models.Post, error) {
 		Preload("Tags").
 		Preload("Author").
 		Where("author_id=?", id).
+		Order("published_at desc").
 		Find(&posts).
 		Error
 
