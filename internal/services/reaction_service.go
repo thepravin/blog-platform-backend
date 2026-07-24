@@ -40,14 +40,14 @@ func (s *ReactionService) TogglePostLike(postID, userID string) (bool, error) {
 		return true, nil
 	}
 
-	if re.DeletedAt.Valid { // unliked
+	if re.DeletedAt.Valid { // current- unliked
 		if err := s.repo.Restore(re.ID.String()); err != nil { // like
 			return false, err
 		}
 
 		// Increment
-		s.db.Model(&models.Post{}).Where("id=?", postID).Update("reaction_count + ?", 1)
-	} else { // liked
+		s.db.Model(&models.Post{}).Where("id = ?", postID).Update("reaction_count", gorm.Expr("reaction_count + ?", 1))
+	} else { //current- liked
 		if err := s.repo.Delete(re.ID.String()); err != nil {
 			return false, err
 		}

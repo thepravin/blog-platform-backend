@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blog_platform/internal/mapper"
 	"blog_platform/internal/services"
 	"blog_platform/internal/utils"
 	"net/http"
@@ -98,10 +99,13 @@ func (h *PostHandler) GetPost(c echo.Context) error {
 			Message: "Post Not found",
 		})
 	}
+
+	safeResponse := mapper.MapPostToResponse(post)
+
 	return c.JSON(http.StatusOK, utils.APIResponse{
 		Success: true,
 		Message: "Post fetched ",
-		Data:    post,
+		Data:    safeResponse,
 	})
 }
 
