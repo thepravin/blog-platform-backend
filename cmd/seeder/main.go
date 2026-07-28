@@ -15,9 +15,6 @@ import (
 func main() {
 	cfg := config.Load()
 
-	// Since we are running this locally, force host to localhost
-	cfg.DBHost = "localhost"
-
 	db, err := database.Connect(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

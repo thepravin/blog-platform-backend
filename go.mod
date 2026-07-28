@@ -29,4 +29,5 @@ require (
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
+	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )

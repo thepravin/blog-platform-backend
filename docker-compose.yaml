@@ -6,27 +6,54 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # It maps local folder (./) to the /app folder inside the container.
       - ./:/app
     environment:
-      # Override DB_HOST to point to the docker database service instead of localhost
-      - DB_HOST=database
+      - DB_WRITE_HOST=database-primary
+      - DB_READ_HOST=database-replica
+      - DB_PORT=5432
+      - DB_READ_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=blog_db
     env_file:
       - .env
     depends_on:
-      - database
+      - database-primary
+      - database-replica
 
-  database:
-    image: postgres:16-alpine
+  # 1. PRIMARY DATABASE (Handles Writes)
+  database-primary:
+    image: bitnami/postgresql:latest
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: blog_db
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=blog_db
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pg_primary_data:/bitnami/postgresql
+
+  # 2. REPLICA DATABASE (Handles Reads, streams from Primary)
+  database-replica:
+    image: bitnami/postgresql:latest
+    restart: always
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_MASTER_HOST=database-primary
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+    ports:
+      - "5433:5432" # Exposed on 5433 locally so it doesn't conflict with Primary
+    depends_on:
+      - database-primary
+    volumes:
+      - pg_replica_data:/bitnami/postgresql
 
   redis:
     image: redis/redis-stack:latest
@@ -38,5 +65,6 @@ services:
       - redisdata:/data
 
 volumes:
-  pgdata:
+  pg_primary_data:
+  pg_replica_data:
   redisdata:

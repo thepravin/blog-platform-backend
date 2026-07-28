@@ -8,15 +8,35 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 
 func Connect(cfg *config.Config) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.DBHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort)
+	// 1. Dynamically build the DSN (Data Source Name) for the Primary (Write) DB
+	dsnWrite := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		cfg.DBWriteHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+	// 2. Connect to the PRIMARY (Write) database
+	db, err := gorm.Open(postgres.Open(dsnWrite), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect database %w", err)
+	}
+
+	// 3. Dynamically build the DSN for the Replica (Read) DB
+	dsnRead := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		cfg.DBReadHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBReadPort)
+
+	// 4. Configure the DB Resolver plugin for the REPLICA (Read)
+	resolverConfig := dbresolver.Register(dbresolver.Config{
+		Replicas: []gorm.Dialector{postgres.Open(dsnRead)},
+		Sources:  []gorm.Dialector{postgres.Open(dsnWrite)},
+		Policy:   dbresolver.RandomPolicy{},
+	})
+
+	// 3. Attach the plugin
+	err = db.Use(resolverConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to use dbresolver plugin %w", err)
 	}
 
 	// Enable the uuid-ossp extension for uuid_generate_v4()
