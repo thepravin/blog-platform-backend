@@ -4,6 +4,7 @@ import (
 	"blog_platform/internal/auth"
 	"blog_platform/internal/models"
 	"blog_platform/internal/repositories"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,11 +46,11 @@ func (s *UserService) Register(username, email, password string) (*models.User, 
 func (s *UserService) Login(email, password string) (*models.User, string, error) {
 	u, err := s.repo.GetByEmail(email)
 	if err != nil {
-		return nil, "", err
+		return nil, "", errors.New("Invalid Email or Password")
 	}
 
 	if !auth.CheckPassword(u.Password, password) {
-		return nil, "", err
+		return nil, "", errors.New("Invalid Email or Password")
 	}
 
 	token, _ := auth.GenerateJWT(u.ID.String(), u.Email, u.Role)

@@ -52,7 +52,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 	user, token, err := h.Service.Login(req.Email, req.Password)
 	if err != nil {
-		return utils.Err(c, http.StatusBadRequest, "Invalid Credentials")
+		return utils.Err(c, http.StatusBadRequest, "Invalid Email or Password")
 	}
 
 	return utils.JSON(
