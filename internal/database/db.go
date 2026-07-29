@@ -54,6 +54,7 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		&models.Comment{},
 		&models.Tag{},
 		&models.Reaction{},
+		&models.PostView{},
 	)
 
 	if err != nil {

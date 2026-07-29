@@ -36,15 +36,17 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 	reactionH := handlers.NewReactionHandler(reactionSvc)
 
 	// Public Endpoints
-	e.POST("/api/v1/signup", authH.Signup)
-	e.POST("/api/v1/login", authH.Login)
+	public := e.Group("/api/v1")
 
-	e.GET("/api/v1/posts", postH.GetAll, middleware.OptionalMiddleware(cfg))
-	e.GET("/api/v1/posts/:slug", postH.GetPost, middleware.OptionalMiddleware(cfg))
-	e.GET("/api/v1/posts/:id/comments", commentH.List)
-	e.PUT("/api/v1/posts/:id", postH.UpdatePost)
+	public.POST("/signup", authH.Signup)
+	public.POST("/login", authH.Login)
 
-	e.GET("/api/v1/tags", func(c echo.Context) error {
+	public.GET("/posts", postH.GetAll, middleware.OptionalMiddleware(cfg))
+	public.GET("/posts/:slug", postH.GetPost, middleware.OptionalMiddleware(cfg))
+	public.GET("/posts/:id/comments", commentH.List)
+	public.POST("/posts/:id/view", postH.RecordView, middleware.OptionalMiddleware(cfg))
+
+	public.GET("/tags", func(c echo.Context) error {
 		db := c.Get("db").(*gorm.DB)
 		var tags []models.Tag
 		_ = db.Find(&tags).Error
@@ -52,20 +54,20 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 	})
 
 	// Protected Routes
+	protected := e.Group("/api/v1")
+	protected.Use(middleware.JWTMiddleware(cfg))
 
-	g := e.Group("/api/v1")
-	g.Use(middleware.JWTMiddleware(cfg))
+	protected.GET("/profile/me", userH.GetProfile)
 
-	g.GET("/profile/me", userH.GetProfile)
+	protected.POST("/posts", postH.CreatePost)
+	protected.GET("/posts/history", postH.GetHistory)
+	protected.GET("/posts/history/:id", postH.GetDeletedPostById)
+	protected.GET("/posts/me", postH.GetPostsByUserId)
+	protected.GET("/posts/:id/restore", postH.RestoreDeletedPostById)
+	protected.DELETE("/posts/:id", postH.Delete)
+	protected.PUT("/posts/:id/edit", postH.UpdatePost)
 
-	g.POST("/posts", postH.CreatePost)
-	g.GET("/posts/history", postH.GetHistory)
-	g.GET("/posts/history/:id", postH.GetDeletedPostById)
-	g.GET("/posts/me", postH.GetPostsByUserId)
-	g.GET("/posts/:id/restore", postH.RestoreDeletedPostById)
-	g.DELETE("/posts/:id", postH.Delete)
+	protected.POST("/posts/:id/comments", commentH.Add)
 
-	g.POST("/posts/:id/comments", commentH.Add)
-
-	g.POST("/posts/:id/reactions", reactionH.Toggle)
+	protected.POST("/posts/:id/reactions", reactionH.Toggle)
 }

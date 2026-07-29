@@ -153,3 +153,60 @@ func (s *PostService) GetDeletedPostById(id string) (*models.Post, error) {
 func (s *PostService) RestoreDeletedPostById(id string) error {
 	return s.repo.RestoreDeletedPost(id)
 }
+func (s *PostService) RecordView(postID string, userID *string, ipAddress string) error {
+	postUUID, err := uuid.Parse(postID)
+	if err != nil {
+		return err
+	}
+
+	var userUUIDPtr *uuid.UUID
+	if userID != nil {
+		u, err := uuid.Parse(*userID)
+		if err == nil {
+			userUUIDPtr = &u
+		}
+	}
+
+	// Calculate the threshold for 24 hours ago
+	twentyFourHoursAgo := time.Now().Add(-24 * time.Hour)
+
+	// Check if the user/IP has already viewed this post within the last 24 hours
+	var existingView models.PostView
+	query := s.db.Where("post_id = ? AND created_at > ?", postUUID, twentyFourHoursAgo)
+
+	if userUUIDPtr != nil {
+		query = query.Where("user_id = ?", userUUIDPtr)
+	} else {
+		query = query.Where("ip_address = ?", ipAddress)
+	}
+
+	err = query.First(&existingView).Error
+	if err == nil {
+		// A view already exists in the last 24 hours Do nothing.
+		return nil
+	} else if err != gorm.ErrRecordNotFound {
+		return err // database error occurred
+	}
+
+	// No recent view found. Record a new view and update the post views count in a transaction
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		newView := models.PostView{
+			ID:        uuid.New(),
+			PostID:    postUUID,
+			UserID:    userUUIDPtr,
+			IPAddress: ipAddress,
+			CreatedAt: time.Now(),
+		}
+
+		if err := tx.Create(&newView).Error; err != nil {
+			return err
+		}
+
+		// Increment the view count on the main post table
+		if err := tx.Model(&models.Post{}).Where("id = ?", postUUID).UpdateColumn("views", gorm.Expr("views + ?", 1)).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}

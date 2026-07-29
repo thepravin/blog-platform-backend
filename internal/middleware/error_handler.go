@@ -28,7 +28,11 @@ func GlobalErrorHandler(err error, c echo.Context) {
 		message = customErr.Message
 	case errors.As(err, &echoErr): // It's built-in echo error
 		statusCode = echoErr.Code
-		message = echoErr.Message.(string)
+		if msg, ok := echoErr.Message.(string); ok {
+			message = msg
+		} else {
+			message = http.StatusText(echoErr.Code)
+		}
 
 	default:
 		statusCode = http.StatusInternalServerError

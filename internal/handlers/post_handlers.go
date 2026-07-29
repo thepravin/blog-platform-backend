@@ -138,3 +138,25 @@ func (h *PostHandler) RestoreDeletedPostById(c echo.Context) error {
 	}
 	return utils.JSON(c, http.StatusOK, true, "Post restored", nil)
 }
+
+func (h *PostHandler) RecordView(c echo.Context) error {
+	postID := c.Param("id")
+
+	// 1. Get the IP Address for anonymous fallback
+	ipAddress := c.RealIP()
+
+	// 2. Try to get the UserID (If the OptionalAuth middleware found a token)
+	var userID *string
+	if u := c.Get("user_id"); u != nil {
+		uid := u.(string)
+		userID = &uid
+	}
+
+	// 3. Call the service to record the view
+	err := h.Service.RecordView(postID, userID, ipAddress)
+	if err != nil {
+		return err
+	}
+
+	return utils.JSON(c, http.StatusOK, true, "View recorded", nil)
+}
