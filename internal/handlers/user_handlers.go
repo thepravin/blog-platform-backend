@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blog_platform/internal/errs"
 	"blog_platform/internal/services"
 	"blog_platform/internal/utils"
 	"net/http"
@@ -19,12 +20,14 @@ func NewUserHandler(s *services.UserService) *UserHandler {
 }
 
 func (u *UserHandler) GetProfile(c echo.Context) error {
-	userId := c.Get("user_id").(string)
+	userId, ok := c.Get("user_id").(string)
+	if !ok {
+		return errs.NewUnauthorizedError("Invalid or missing user id")
+	}
 
 	user, err := u.Service.GetProfile(userId)
-
 	if err != nil {
-		return utils.Err(c, http.StatusInternalServerError, "Profile not found")
+		return err
 	}
 
 	return utils.JSON(c, http.StatusOK, true, "Profile found", user)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blog_platform/internal/errs"
 	"blog_platform/internal/services"
 	"blog_platform/internal/utils"
 	"net/http"
@@ -28,12 +29,12 @@ type SignupReq struct {
 func (h *AuthHandler) Signup(c echo.Context) error {
 	var req SignupReq
 	if err := c.Bind(&req); err != nil {
-		return utils.Err(c, http.StatusBadRequest, "Invalid Payload")
+		return errs.NewBadRequestError("Invalid Payload")
 	}
 
 	u, err := h.Service.Register(req.UserName, req.Email, req.Password)
 	if err != nil {
-		return utils.Err(c, http.StatusBadRequest, err.Error())
+		return errs.NewBadRequestError(err.Error()) // Still returning service error if explicit
 	}
 
 	return utils.JSON(c, http.StatusCreated, true, "user_created", u)
@@ -47,12 +48,12 @@ type LoginReq struct {
 func (h *AuthHandler) Login(c echo.Context) error {
 	var req LoginReq
 	if err := c.Bind(&req); err != nil {
-		return utils.Err(c, http.StatusBadRequest, "Invalid Payload")
+		return errs.NewBadRequestError("Invalid Payload")
 	}
 
 	user, token, err := h.Service.Login(req.Email, req.Password)
 	if err != nil {
-		return utils.Err(c, http.StatusBadRequest, "Invalid Email or Password")
+		return errs.NewBadRequestError("Invalid Email or Password")
 	}
 
 	return utils.JSON(

@@ -7,6 +7,7 @@ import (
 	"blog_platform/internal/models"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -101,17 +102,23 @@ func seedPosts(db *gorm.DB) {
 	<p>Thank you for reading my article! Feel free to drop a reaction or leave a comment below sharing your thoughts.</p>
 	`
 
+	now := time.Now()
+
 	for i := 1; i <= 10; i++ {
 		author := users[i%len(users)]
+		// Scatter publish times so they aren't all exactly the same millisecond
+		pubTime := now.Add(-time.Duration(i) * time.Hour)
+
 		post := models.Post{
-			AuthorID:   author.ID,
-			Title:      fmt.Sprintf("Exploring Modern Architecture %d", i),
-			Slug:       fmt.Sprintf("exploring-modern-architecture-%d-%s", i, uuid.NewString()[:6]),
-			Excerpt:    "A quick dive into modern concepts, sharing valuable insights on software design and structural patterns.",
-			Content:    htmlContent,
-			Status:     "published",
-			Visibility: "public",
-			Views:      int64(i * 15),
+			AuthorID:    author.ID,
+			Title:       fmt.Sprintf("Exploring Modern Architecture %d", i),
+			Slug:        fmt.Sprintf("exploring-modern-architecture-%d-%s", i, uuid.NewString()[:6]),
+			Excerpt:     "A quick dive into modern concepts, sharing valuable insights on software design and structural patterns.",
+			Content:     htmlContent,
+			Status:      "published",
+			Visibility:  "public",
+			PublishedAt: &pubTime,
+			Views:       int64(i * 15),
 		}
 		if db.Where("title = ?", post.Title).First(&models.Post{}).Error == gorm.ErrRecordNotFound {
 			db.Create(&post)

@@ -2,6 +2,7 @@ package app
 
 import (
 	"blog_platform/config"
+	"blog_platform/internal/middleware"
 	"blog_platform/internal/routes"
 
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ type Server struct {
 
 func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 	e := echo.New()
+	e.HTTPErrorHandler = middleware.GlobalErrorHandler
 	routes.RegisterRoutes(e, db, cfg)
 	return &Server{E: e, DB: db, Cfg: cfg}
 }

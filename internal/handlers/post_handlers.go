@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blog_platform/internal/errs"
 	"blog_platform/internal/mapper"
 	"blog_platform/internal/services"
 	"blog_platform/internal/utils"
@@ -25,21 +26,21 @@ type CreatePostReq struct {
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	var req CreatePostReq
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalidrequest"})
+		return errs.NewBadRequestError("Invalid request payload")
 	}
 	userIDstr, ok := c.Get("user_id").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "invalid user id"})
+		return errs.NewUnauthorizedError("Invalid or missing user id")
 	}
 	authorID, err := uuid.Parse(userIDstr)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "invalid user id"})
+		return errs.NewUnauthorizedError("Invalid user id format")
 	}
 	post, err := h.Service.Create(authorID, req.Title, req.Content, req.Tags)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, echo.Map{"error": err.Error()})
+		return err
 	}
-	return c.JSON(http.StatusCreated, post)
+	return utils.JSON(c, http.StatusCreated, true, "Post created", post)
 }
 
 func (h *PostHandler) GetAll(c echo.Context) error {
@@ -50,7 +51,7 @@ func (h *PostHandler) GetAll(c echo.Context) error {
 
 	posts, err := h.Service.GetAll(sortParam)
 	if err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 	return utils.JSON(c, http.StatusOK, true, "posts", posts)
 }
@@ -59,15 +60,12 @@ func (h *PostHandler) GetHistory(c echo.Context) error {
 	userId, ok := c.Get("user_id").(string)
 
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, utils.APIResponse{
-			Success: false,
-			Message: "Invalid user id",
-		})
+		return errs.NewUnauthorizedError("Invalid user id")
 	}
 
 	posts, err := h.Service.GetAllDeletedPosts(userId)
 	if err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 
 	return utils.JSON(c, http.StatusOK, true, "posts", posts)
@@ -76,7 +74,7 @@ func (h *PostHandler) GetHistory(c echo.Context) error {
 func (h *PostHandler) Delete(c echo.Context) error {
 	id := c.Param("id")
 	if err := h.Service.Delete(id); err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 	return utils.JSON(c, http.StatusOK, true, "deleted", nil)
 }
@@ -85,13 +83,13 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 	postID := c.Param("id")
 	var req CreatePostReq
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid request"})
+		return errs.NewBadRequestError("Invalid request payload")
 	}
 	updatePost, err := h.Service.Update(postID, req.Title, req.Content, req.Tags)
 	if err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
-	return c.JSON(http.StatusOK, updatePost)
+	return utils.JSON(c, http.StatusOK, true, "Post updated", updatePost)
 }
 
 func (h *PostHandler) GetPost(c echo.Context) error {
@@ -99,38 +97,25 @@ func (h *PostHandler) GetPost(c echo.Context) error {
 	userId, _ := c.Get("user_id").(string)
 	post, err := h.Service.GetBySlug(slug, userId)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, utils.APIResponse{
-			Success: false,
-			Message: "Post Not found",
-		})
+		return err
 	}
 
 	safeResponse := mapper.MapPostToResponse(post)
 
-	return c.JSON(http.StatusOK, utils.APIResponse{
-		Success: true,
-		Message: "Post fetched ",
-		Data:    safeResponse,
-	})
+	return utils.JSON(c, http.StatusOK, true, "Post fetched", safeResponse)
 }
 
 func (h *PostHandler) GetPostsByUserId(c echo.Context) error {
 	userId, ok := c.Get("user_id").(string)
 
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, utils.APIResponse{
-			Success: false,
-			Message: "Invalid user id",
-		})
+		return errs.NewUnauthorizedError("Invalid user id")
 	}
 
 	posts, err := h.Service.GetAllByUserId(userId)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.APIResponse{
-			Success: false,
-			Message: "Internal server Error",
-		})
+		return err
 	}
 
 	return utils.JSON(c, http.StatusOK, true, "posts", posts)
@@ -140,23 +125,16 @@ func (h *PostHandler) GetDeletedPostById(c echo.Context) error {
 	id := c.Param("id")
 	post, err := h.Service.GetDeletedPostById(id)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, utils.APIResponse{
-			Success: false,
-			Message: "Post Not found",
-		})
+		return err
 	}
 
-	return c.JSON(http.StatusOK, utils.APIResponse{
-		Success: true,
-		Message: "Post fetched",
-		Data:    post,
-	})
+	return utils.JSON(c, http.StatusOK, true, "Post fetched", post)
 }
 
 func (h *PostHandler) RestoreDeletedPostById(c echo.Context) error {
 	id := c.Param("id")
 	if err := h.Service.RestoreDeletedPostById(id); err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 	return utils.JSON(c, http.StatusOK, true, "Post restored", nil)
 }

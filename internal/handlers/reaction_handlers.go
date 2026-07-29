@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blog_platform/internal/errs"
 	"blog_platform/internal/services"
 	"blog_platform/internal/utils"
 	"net/http"
@@ -24,15 +25,15 @@ func (h *ReactionHandler) Toggle(c echo.Context) error {
 	postID := c.Param("id")
 	var req reactReq
 	if err := c.Bind(&req); err != nil {
-		return utils.Err(c, http.StatusBadRequest, "invalid payload")
+		return errs.NewBadRequestError("invalid payload")
 	}
 	uid := c.Get("user_id")
 	if uid == nil {
-		return utils.Err(c, http.StatusUnauthorized, "unauthorized")
+		return errs.NewUnauthorizedError("unauthorized")
 	}
 	liked, err := h.Service.TogglePostLike(postID, uid.(string))
 	if err != nil {
-		return utils.Err(c, http.StatusInternalServerError, err.Error())
+		return err
 	}
 	if liked {
 		return utils.JSON(c, http.StatusOK, true, "liked", nil)
