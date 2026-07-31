@@ -20,8 +20,10 @@ type PostResponse struct {
 	Content       string         `json:"content"`
 	CommentCount  int64          `json:"comment_count"`
 	ReactionCount int64          `json:"reaction_count"`
+	ViewCount     int64          `json:"view_count"`
 	HasLiked      bool           `json:"has_liked"`
 	CreatedAt     time.Time      `json:"created_at"`
+	PublishedAt   *time.Time     `json:"published_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `json:"deleted_at"`
 }

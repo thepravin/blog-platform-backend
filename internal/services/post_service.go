@@ -202,11 +202,6 @@ func (s *PostService) RecordView(postID string, userID *string, ipAddress string
 			return err
 		}
 
-		// Increment the view count on the main post table
-		if err := tx.Model(&models.Post{}).Where("id = ?", postUUID).UpdateColumn("views", gorm.Expr("views + ?", 1)).Error; err != nil {
-			return err
-		}
-
 		return nil
 	})
 }

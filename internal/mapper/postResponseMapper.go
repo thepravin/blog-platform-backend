@@ -18,8 +18,10 @@ func MapPostToResponse(post *models.Post) dto.PostResponse {
 		Content:       post.Content,
 		ReactionCount: post.ReactionCount,
 		CommentCount:  post.CommentCount,
+		ViewCount:     post.Views,
 		HasLiked:      post.HasLiked,
 		CreatedAt:     post.CreatedAt,
+		PublishedAt:   post.PublishedAt,
 		UpdatedAt:     post.UpdatedAt,
 		DeletedAt:     post.DeletedAt,
 	}

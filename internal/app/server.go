@@ -4,8 +4,10 @@ import (
 	"blog_platform/config"
 	"blog_platform/internal/middleware"
 	"blog_platform/internal/routes"
+	"blog_platform/internal/workers"
 
 	"github.com/labstack/echo/v4"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
@@ -23,5 +25,12 @@ func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 }
 
 func (s *Server) Start(addr string) error {
+
+	viewWorker := workers.NewViewWorker(s.DB)
+
+	c := cron.New()
+	c.AddFunc("@every 10m", viewWorker.ProcessViews)
+
+	c.Start()
 	return s.E.Start(addr)
 }

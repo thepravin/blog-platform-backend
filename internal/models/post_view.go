@@ -11,5 +11,6 @@ type PostView struct {
 	PostID    uuid.UUID  `gorm:"type:uuid;not null;index"`
 	UserID    *uuid.UUID `gorm:"type:uuid;index"`
 	IPAddress string     `gorm:"index"`
+	Processed bool       `gorm:"default:false"`
 	CreatedAt time.Time
 }
