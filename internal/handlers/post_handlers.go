@@ -121,9 +121,9 @@ func (h *PostHandler) GetPostsByUserId(c echo.Context) error {
 	return utils.JSON(c, http.StatusOK, true, "posts", posts)
 }
 
-func (h *PostHandler) GetDeletedPostById(c echo.Context) error {
-	id := c.Param("id")
-	post, err := h.Service.GetDeletedPostById(id)
+func (h *PostHandler) GetDeletedPostBySlug(c echo.Context) error {
+	slug := c.Param("slug")
+	post, err := h.Service.GetDeletedPostBySlug(slug)
 	if err != nil {
 		return err
 	}

@@ -61,7 +61,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 
 	protected.POST("/posts", postH.CreatePost)
 	protected.GET("/posts/history", postH.GetHistory)
-	protected.GET("/posts/history/:id", postH.GetDeletedPostById)
+	protected.GET("/posts/history/:slug", postH.GetDeletedPostBySlug)
 	protected.GET("/posts/me", postH.GetPostsByUserId)
 	protected.POST("/posts/:id/restore", postH.RestoreDeletedPostById)
 	protected.DELETE("/posts/:id", postH.Delete)

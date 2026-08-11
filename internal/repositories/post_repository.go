@@ -107,7 +107,7 @@ func (r *PostRepository) GetAllDeletedPosts(id string) ([]models.Post, error) {
 	return posts, err
 }
 
-func (r *PostRepository) GetDeletedPostById(id string) (*models.Post, error) {
+func (r *PostRepository) GetDeletedPostBySlug(slug string) (*models.Post, error) {
 	var post models.Post
 
 	err := r.db.Unscoped().
@@ -116,7 +116,7 @@ func (r *PostRepository) GetDeletedPostById(id string) (*models.Post, error) {
 		Preload("Comments").
 		Preload("Tags").
 		Preload("Reactions").
-		Where("id = ?", id).
+		Where("slug = ?", slug).
 		First(&post).
 		Error
 
